@@ -1,0 +1,128 @@
+import React, { useState } from 'react';
+import {
+  SafeAreaView,
+  ScrollView,
+  View,
+  Text,
+  Button,
+  StyleSheet,
+} from 'react-native';
+import { LoginAction } from '../actions/login.action';
+import { TransactionAction } from '../actions/transaction.action';
+
+import { useAppDispatch, useAppSelector } from '../hooks';
+import { getLoginAction } from '../reducers/LoginReducer';
+import { getAction } from '../reducers/TransactionReducer';
+import { HttpServices } from '../services/http.services';
+import {  StateServices } from '../services/state.services';
+import { commonStyles } from '../style';
+
+const Page2 = () => {
+  const counter = useAppSelector(state => state.sharedLibs_transaction.counter)
+  const {userId, token } = useAppSelector(state => state.sharedLibs_login)
+  const dispatch = useAppDispatch()
+  const [title, setTitle] = useState("Test");
+
+  const stateService = new StateServices();
+  const tokenFromService = stateService.getLoginToken();
+
+  function getTitle() {
+    let httpServices = new HttpServices();
+    httpServices.getURL().then((response)=>{
+      setTitle(response.data.title)
+    })
+  }
+  
+  getTitle();
+
+  return (
+    <>
+      <SafeAreaView>
+        <ScrollView contentInsetAdjustmentBehavior="automatic">
+          <View style={commonStyles.container}>
+            <View>
+              <Text style={commonStyles.titles}>SharedLibs Page 2</Text>
+            </View>
+
+            <View style={commonStyles.container}>
+              <Text style={commonStyles.content}>
+                  Test Services : {title}
+              </Text>
+            </View>
+
+
+            <View>
+              <Text style={commonStyles.content}>
+                  Test Redux Counter: {counter}
+              </Text>
+            </View>
+
+            <View>
+              <Text style={commonStyles.content}>
+                  UserId: {userId}
+              </Text>
+            </View>
+
+            <View>
+              <Text style={commonStyles.content}>
+                  Token: {token}
+              </Text>
+            </View>
+
+            <View>
+              <Text style={commonStyles.content}>
+                  Token from Service: {tokenFromService}
+              </Text>
+            </View>
+
+
+            <Button
+                title="Increase Counter"
+                onPress={() =>
+                  dispatch(getAction(TransactionAction.increaseCounter))
+                }
+              />
+
+              <Button
+                title="derease Counter"
+                onPress={() =>
+                  dispatch(getAction(TransactionAction.decreseCounter))
+                }
+              />
+
+              <Button
+                title="set Counter"
+                onPress={() =>
+                  dispatch(getAction(TransactionAction.setCounter, 99))
+                }
+              />
+
+              <Button
+                title="set Transaction"
+                onPress={() =>
+                  dispatch(getAction(TransactionAction.setTransaction, {counter:9999, transactionId:1234567890}))
+                }
+              />
+
+              <Button
+                title="set Token"
+                onPress={() =>
+                  dispatch(getLoginAction(LoginAction.setToken, "asdfghjkl"))
+                }
+              />
+
+              <Button
+                title="set Token from Services"
+                onPress={() =>
+                  new StateServices().setLoginToken("testtesttest")
+                }
+              />
+
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </>
+  );
+};
+
+export default Page2;

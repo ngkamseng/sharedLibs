@@ -11,7 +11,7 @@
 import React from 'react';
 import { Button } from 'react-native';
 import { connect } from 'react-redux';
-import {decrement, increment, setValue} from '../reducers/CounterReducer';
+import {getAction} from '../reducers/TransactionReducer';
 
 import {
   SafeAreaView,
@@ -23,39 +23,42 @@ import {
 } from 'react-native';
 
 import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-import {
   NavigationParams,
   NavigationScreenProp,
   NavigationState
 } from 'react-navigation';
+
+
+
+import { RootState } from '../store';
+import { navigationList } from '../navigationList';
+import { TransactionAction } from '../actions/transaction.action';
+import { TransactionModel } from '../interface/transaction.interface';
+import { commonStyles } from '../style';
 import { HttpServices } from '../services/http.services';
+
 
 
 interface Props {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>,
-  counter:number
+  counter:number,
+  increment: any,
+  decrement: any,
+  setValue: any,
+  setTransaction:Function,
+  transactionId:any
 }
 
 declare const global: {HermesInternal: null | {}};
 class Landing extends React.Component<Props> {
-
   
-  //title:string = "test";
-  httpService = new HttpServices();
+  //httpService = new HttpServices();
   state = {
     title:"test"
   }
   getTitle() {
-    let self = this;
-    this.httpService.getURL().then((response)=>{
-      console.log(response.data.title);
+    let httpServices = new HttpServices();
+    httpServices.getURL().then((response)=>{
       this.setState(() => ({
         title: response.data.title
       }));
@@ -66,62 +69,36 @@ class Landing extends React.Component<Props> {
   componentDidMount() {
     this.getTitle();
   }
-
+  
   render() {
-    
+
     return (
       <>
         <StatusBar barStyle="dark-content" />
         <SafeAreaView>
-          <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={styles.scrollView}>
-            <Header />
-            {global.HermesInternal == null ? null : (
-              <View style={styles.engine}>
-                <Text style={styles.footer}>Engine: Hermes</Text>
+          <ScrollView contentInsetAdjustmentBehavior="automatic">
+
+            <View style={commonStyles.container}>
+              <View>
+                <Text style={commonStyles.titles}>SharedLibs Home Page</Text>
               </View>
-            )}
-            <View style={styles.body}>
-              <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>App1 Step Oneeee</Text>
-                <Text style={styles.sectionDescription}>
-                  Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-                  screen and then come back to see your edits.
-                </Text>
-              </View>
-              <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>See Your Changes</Text>
-                <Text style={styles.sectionDescription}>
-                  <ReloadInstructions />
-                </Text>
-              </View>
-              <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>Debug</Text>
-                <Text style={styles.sectionDescription}>
-                  <DebugInstructions />
-                </Text>
-              </View>
-              <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>Learn More</Text>
-                <Text style={styles.sectionDescription}>
-                  Read the docs to discover what to do next:
+
+              <View style={commonStyles.container}>
+                <Text style={commonStyles.content}>
+                    Test Services : {this.state.title}
                 </Text>
               </View>
 
-              <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Title</Text>
-                <Text style={styles.sectionDescription}>
-                  Title: {this.state.title}
+
+              <View>
+                <Text style={commonStyles.content}>
+                    Test Redux Counter: {this.props.counter}
+                </Text>
+                <Text style={commonStyles.content}>
+                    Test Redux TransactionId: {this.props.transactionId}
                 </Text>
               </View>
 
-              <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-                <Text style={styles.sectionDescription}>
-                  Counter: {this.props.counter}
-                </Text>
-              </View>
               <Button
                 title="Increase Counter"
                 onPress={() =>
@@ -142,11 +119,18 @@ class Landing extends React.Component<Props> {
                   this.props.setValue(88)
                 }
               />
+
+              <Button
+                title="set Transaction"
+                onPress={() =>
+                  this.props.setTransaction({counter:999, transactionId:12312312})
+                }
+              />
               
               <Button
                 title="Go to Container Step 2"
                 onPress={() =>
-                  this.props.navigation.navigate('App1_Step2')
+                  this.props.navigation.navigate(navigationList.page2)
                 }
               />
             </View>
@@ -157,60 +141,24 @@ class Landing extends React.Component<Props> {
   }
 }
 
-const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
-  },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
-});
-
-const mapStateToProps = (state:any) => {
-  const { counter } = state.App1.App1
-  return { counter }
+const mapStateToProps = (state:RootState) => {
+  const { counter, transactionId } = state.sharedLibs_transaction
+  return { counter, transactionId }
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch: (arg0: { payload: number | undefined; type: string; }) => void) => {
   return {
     increment: () => {
-      dispatch(increment())
+      dispatch(getAction(TransactionAction.increaseCounter))
     },
     decrement: () => {
-      dispatch(decrement())
+      dispatch(getAction(TransactionAction.decreseCounter))
     },
     setValue: (val:number) => {
-      dispatch(setValue(val))
+      dispatch(getAction(TransactionAction.setCounter,val))
+    },
+    setTransaction: (val:TransactionModel) => {
+      dispatch(getAction(TransactionAction.setTransaction,{counter:999, transactionId:12312312}))
     }
   }
 }

@@ -1,27 +1,26 @@
-import 'react-native-gesture-handler';
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import Landing from './screens/Landing';
-import Step2 from './screens/Step2';
+import Page2 from './screens/Page2';
+import { navigationList } from './navigationList';
 
 const Stack = createStackNavigator();
 
-const App1_Navigation = () => {
+const Navigation = () => {
   return (
         <Stack.Navigator>
           <Stack.Screen
-            name="App1_Home"
+            name={navigationList.home}
             component={Landing}
           />
 
           <Stack.Screen
-            name="App1_Step2"
-            component={Step2}
+            name={navigationList.page2}
+            component={Page2}
           />
-          
         </Stack.Navigator>
    
   );
 };
 
-export default App1_Navigation;
+export default Navigation;
